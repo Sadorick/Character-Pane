@@ -5,7 +5,7 @@
 
 <style>
 .pane {
-  width: 800px;
+  width: 900px;
   border: 4px solid #b38f00;  
   border-radius: 12px;
   background: linear-gradient(#1b1b22, #14141a);
@@ -24,32 +24,23 @@
   text-shadow: 1px 1px 2px #000;
 }
 
-/* Paper doll grid */
+/* Paper Doll Grid */
 .paper-doll {
   display: grid;
-  grid-template-columns: 120px 180px 120px;
-  grid-template-rows: 120px 180px 120px;
+  grid-template-columns: 120px 180px 120px; /* left | portrait | right */
+  grid-template-rows: repeat(4, 120px); /* 4 rows for slots */
   gap: 15px;
   justify-items: center;
   align-items: center;
   position: relative;
 }
 
-/* Place slots around portrait */
-#Head { grid-column: 2; grid-row: 1; }
-#Neck { grid-column: 2; grid-row: 2; align-self: start; }
-#LeftHand { grid-column: 1; grid-row: 2; }
-#RightHand { grid-column: 3; grid-row: 2; }
-#Chest { grid-column: 2; grid-row: 3; }
-#Legs { grid-column: 2; grid-row: 4; }
-#Feet { grid-column: 2; grid-row: 5; }
-
-/* Portrait center */
+/* Portrait spans all 4 rows */
 .portrait {
   grid-column: 2;
-  grid-row: 2;
+  grid-row: 1 / span 4;
   width: 180px;
-  height: 180px;
+  height: calc(4 * 120px + 3 * 15px); /* slots + gaps = 525px */
   border: 4px solid gold;
   border-radius: 8px;
   background-size: cover;
@@ -58,10 +49,22 @@
   z-index: 1;
 }
 
+/* Left slots */
+#L1 { grid-column: 1; grid-row: 1; }
+#L2 { grid-column: 1; grid-row: 2; }
+#L3 { grid-column: 1; grid-row: 3; }
+#L4 { grid-column: 1; grid-row: 4; }
+
+/* Right slots */
+#R1 { grid-column: 3; grid-row: 1; }
+#R2 { grid-column: 3; grid-row: 2; }
+#R3 { grid-column: 3; grid-row: 3; }
+#R4 { grid-column: 3; grid-row: 4; }
+
 /* Slots style */
 .slot {
-  width: 100px;
-  height: 100px;
+  width: 120px;
+  height: 120px;
   border: 3px solid #b38f00;
   border-radius: 6px;
   background: linear-gradient(#222, #1a1a1a);
@@ -86,6 +89,7 @@
   box-shadow: 0 0 10px #fff700 inset, 0 0 12px #fff700;
 }
 
+/* Tooltip */
 .tooltip {
   position: absolute;
   background: #111;
@@ -96,7 +100,7 @@
   width: 220px;
   display: none;
   z-index: 999;
-  left: 110px;
+  left: 130px;
   top: 0;
   pointer-events: none;
   border-radius: 6px;
@@ -107,6 +111,7 @@
   display: block;
 }
 
+
 </style>
 </head>
 
@@ -116,23 +121,23 @@
   <div class="title" id="name">Loading...</div>
 
   <div class="paper-doll">
-    <!-- Top slots -->
-    <div class="slot" id="Head"><img><div class="tooltip"></div></div>
-    <div class="slot" id="Neck"><img><div class="tooltip"></div></div>
+    <!-- Left slots -->
+    <div class="slot" id="L1"><img><div class="tooltip"></div></div>
+    <div class="slot" id="L2"><img><div class="tooltip"></div></div>
+    <div class="slot" id="L3"><img><div class="tooltip"></div></div>
+    <div class="slot" id="L4"><img><div class="tooltip"></div></div>
 
-    <!-- Portrait center -->
+    <!-- Portrait -->
     <div class="portrait" id="portrait"></div>
 
-    <!-- Left & Right -->
-    <div class="slot" id="LeftHand"><img><div class="tooltip"></div></div>
-    <div class="slot" id="RightHand"><img><div class="tooltip"></div></div>
-
-    <!-- Bottom slots -->
-    <div class="slot" id="Chest"><img><div class="tooltip"></div></div>
-    <div class="slot" id="Legs"><img><div class="tooltip"></div></div>
-    <div class="slot" id="Feet"><img><div class="tooltip"></div></div>
+    <!-- Right slots -->
+    <div class="slot" id="R1"><img><div class="tooltip"></div></div>
+    <div class="slot" id="R2"><img><div class="tooltip"></div></div>
+    <div class="slot" id="R3"><img><div class="tooltip"></div></div>
+    <div class="slot" id="R4"><img><div class="tooltip"></div></div>
   </div>
 </div>
+
 
 <script>
 const charURL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vSuibkGWLHa5Sz7rJtRjgpZUnG6ZNxgtuxfFqiJB_OsUVqmOaxthADcFLJwmWxfAYvPO2zjFLroosZ1/pub?gid=0&single=true&output=csv";
