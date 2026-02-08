@@ -5,7 +5,7 @@
 
 <style>
 .pane {
-  width: 900px;
+  width: 1100px; /* wider for stats on the side */
   border: 4px solid #b38f00;  
   border-radius: 12px;
   background: linear-gradient(#1b1b22, #14141a);
@@ -16,36 +16,35 @@
   align-items: center;
 }
 
-.title {
-  text-align: center;
-  color: gold;
-  font-size: 32px;
-  margin-bottom: 20px;
-  text-shadow: 1px 1px 2px #000;
+/* Flex wrapper for paper doll + stats panel */
+.content-wrapper {
+  display: flex;
+  flex-direction: row;
+  gap: 40px; /* space between paper doll and stats */
+  align-items: start;
 }
 
 /* Paper Doll Grid */
 .paper-doll {
   display: grid;
   grid-template-columns: 140px 180px 140px; /* left | portrait | right */
-  grid-template-rows: repeat(4, 120px); /* 4 slots tall */
+  grid-template-rows: repeat(4, 120px); /* 4 slots */
   gap: 15px;
   justify-items: center;
   align-items: center;
   position: relative;
-  overflow: visible;  /* ensure tooltips aren't cut off */
+  overflow: visible;
 }
 
-
-/* Portrait spans all 4 rows */
+/* Portrait */
 .portrait {
   grid-column: 2;
   grid-row: 1 / span 4;
-  width: 180px;   /* fixed width */
-  height: 100%;   /* fill 4 rows height */
+  width: 180px;
+  height: calc(4*120px + 3*15px); /* 4 slots + 3 gaps */
   border: 4px solid gold;
   border-radius: 8px;
-  background-size: cover;    /* scale and crop nicely */
+  background-size: cover;
   background-position: center;
   box-shadow: 0 0 10px #000 inset;
   z-index: 1;
@@ -72,7 +71,7 @@
   background: linear-gradient(#222, #1a1a1a);
   position: relative;
   cursor: pointer;
-  overflow: visible;  /* important for tooltip */
+  overflow: visible;
   box-shadow: 0 0 5px #000 inset;
   transition: all 0.2s ease;
   z-index: 2;
@@ -86,9 +85,15 @@
   border-radius: 4px;
 }
 
+.slot:hover {
+  border-color: #fff700;
+  box-shadow: 0 0 10px #fff700 inset, 0 0 12px #fff700;
+}
+
+/* Tooltip */
 .tooltip {
   position: absolute;
-  left: 130px;  /* position to the right */
+  left: 130px;  /* to the right of slot */
   top: 0;
   display: none;
   background: #111;
@@ -100,12 +105,35 @@
   pointer-events: none;
   border-radius: 6px;
   box-shadow: 0 0 10px #000;
-  z-index: 999;  /* ensure it’s above everything */
+  z-index: 999;
 }
 
 .slot:hover .tooltip {
   display: block;
 }
+
+/* Stats panel */
+.stats-panel {
+  width: 250px;
+  border: 3px solid #b38f00;
+  border-radius: 8px;
+  padding: 15px;
+  background: linear-gradient(#1b1b22, #14141a);
+  color: #fff;
+  box-shadow: 0 0 10px #000;
+  font-size: 18px;
+}
+
+.stats-panel h3 {
+  color: gold;
+  margin-bottom: 10px;
+  text-align: center;
+}
+
+.stat {
+  margin: 5px 0;
+}
+
 
 
 
@@ -117,23 +145,38 @@
 <div class="pane">
   <div class="title" id="name">Loading...</div>
 
-  <div class="paper-doll">
-    <!-- Left slots -->
-    <div class="slot" id="L1"><img><div class="tooltip"></div></div>
-    <div class="slot" id="L2"><img><div class="tooltip"></div></div>
-    <div class="slot" id="L3"><img><div class="tooltip"></div></div>
-    <div class="slot" id="L4"><img><div class="tooltip"></div></div>
+  <div class="content-wrapper">
+    <!-- Paper Doll -->
+    <div class="paper-doll">
+      <!-- Left slots -->
+      <div class="slot" id="L1"><img><div class="tooltip"></div></div>
+      <div class="slot" id="L2"><img><div class="tooltip"></div></div>
+      <div class="slot" id="L3"><img><div class="tooltip"></div></div>
+      <div class="slot" id="L4"><img><div class="tooltip"></div></div>
 
-    <!-- Portrait -->
-    <div class="portrait" id="portrait"></div>
+      <!-- Portrait -->
+      <div class="portrait" id="portrait"></div>
 
-    <!-- Right slots -->
-    <div class="slot" id="R1"><img><div class="tooltip"></div></div>
-    <div class="slot" id="R2"><img><div class="tooltip"></div></div>
-    <div class="slot" id="R3"><img><div class="tooltip"></div></div>
-    <div class="slot" id="R4"><img><div class="tooltip"></div></div>
+      <!-- Right slots -->
+      <div class="slot" id="R1"><img><div class="tooltip"></div></div>
+      <div class="slot" id="R2"><img><div class="tooltip"></div></div>
+      <div class="slot" id="R3"><img><div class="tooltip"></div></div>
+      <div class="slot" id="R4"><img><div class="tooltip"></div></div>
+    </div>
+
+    <!-- Stats Panel -->
+    <div class="stats-panel" id="stats-panel">
+      <h3>Stats</h3>
+      <div class="stat" id="stat-STR">STR: 0</div>
+      <div class="stat" id="stat-DEX">DEX: 0</div>
+      <div class="stat" id="stat-CON">CON: 0</div>
+      <div class="stat" id="stat-INT">INT: 0</div>
+      <div class="stat" id="stat-WIS">WIS: 0</div>
+      <div class="stat" id="stat-CHA">CHA: 0</div>
+    </div>
   </div>
 </div>
+
 
 
 <script>
@@ -144,33 +187,49 @@ function parseCSV(text) {
   return text.trim().split("\n").map(r => r.split(","));
 }
 
+// ----------------- Character Fetch -----------------
 fetch(charURL)
-.then(r => r.text())
-.then(t => {
-  const data = {};
-  parseCSV(t).forEach(row => data[row[0]] = row[1]);
+  .then(r => r.text())
+  .then(t => {
+    const data = {};
+    parseCSV(t).forEach(row => data[row[0]] = row[1]);
 
-  document.getElementById("name").innerText = data["Name"];
-  document.getElementById("portrait").style.backgroundImage =
-    `url(${data["Portrait"]})`;
-});
+    // Name and Portrait
+    document.getElementById("name").innerText = data["Name"];
+    document.getElementById("portrait").style.backgroundImage =
+      `url(${data["Portrait"]})`;
 
+    // Populate stats
+    const stats = ["STR","DEX","CON","INT","WIS","CHA"];
+    stats.forEach(stat => {
+      const el = document.getElementById("stat-" + stat);
+      if (el && data[stat]) el.innerText = `${stat}: ${data[stat]}`;
+    });
+  })
+  .catch(err => console.error("Character fetch failed:", err));
+
+// ----------------- Equipment Fetch -----------------
 fetch(gearURL)
-.then(r => r.text())
-.then(t => {
-  const rows = parseCSV(t);
+  .then(r => r.text())
+  .then(t => {
+    const rows = parseCSV(t);
 
-  rows.slice(1).forEach(row => {
-    const [slot, item, desc, icon] = row;
-    const el = document.getElementById(slot);
-    if (!el) return;
+    // Skip header row
+    rows.slice(1).forEach(row => {
+      const [slot, item, desc, icon] = row;
 
-    el.querySelector("img").src = icon;
+      const el = document.getElementById(slot);
+      if (!el) return console.warn("Slot not found:", slot);
 
-    const tip = el.querySelector(".tooltip");
-    tip.innerHTML = `<b>${item}</b><br>${desc}`;
-  });
-});
+      // Set icon
+      el.querySelector("img").src = icon;
+
+      // Set hover tooltip
+      const tip = el.querySelector(".tooltip");
+      tip.innerHTML = `<b>${item}</b><br>${desc}`;
+    });
+  })
+  .catch(err => console.error("Equipment fetch failed:", err));
 </script>
 
 </body>
